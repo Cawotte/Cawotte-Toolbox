@@ -5,82 +5,61 @@ namespace Cawotte.Toolbox.Audio
     
     using System;
     using UnityEngine;
+    using UnityEngine.Events;
 
     /// <summary>
     /// Act as a Singleton Dictionary so other objects can access to any sound they want to play.
     /// It must be filled in the inspector with all music and sounds.
     /// </summary>
-    public class AudioManager : Singleton<AudioManager>
+    [CreateAssetMenu(fileName = "AudioManager", menuName = "Audio/AudioManager")]
+    public class AudioManager : ScriptableObject
     {
 
-        [SerializeField] private SoundBank soundBank;
+        //We remember at runtime the Sound Player in the audioManager to be able to 
+        //perform global operation on them (like mute/resume all)
 
+        [SerializeField] [ReadOnly]
+        private List<AudioSourcePlayer> soundSources = new List<AudioSourcePlayer>();
 
-        
-        private AudioSourcePlayer globalPlayer; //Used for musics
-        
         [SerializeField]
-        private String[] musicsToPlay;
+        [Range(0f, 1f)]
+        private float volume;
 
-
-        protected override void OnAwake()
-        {
-            globalPlayer = gameObject.AddComponent<AudioSourcePlayer>();
-            soundBank.Awake();
-        }
-
-        void Start()
-        {
-
-            globalPlayer.PlayMusic(musicsToPlay[0]);
-            
-            Sound music = FindMusic(musicsToPlay[1]);
-            if (music != null)
+        public float Volume { 
+            get => volume; 
+            set
             {
-                Debug.Log(music.name);
-                globalPlayer.Play(music);
+                volume = Mathf.Clamp01(value);
+                OnVolumeChange?.Invoke(volume); //Trigger events when the volume is changed.
             }
-
         }
+
+        public MyFloatUnityEvent OnVolumeChange = null;
 
         #region Public Methods
-        
 
-        /// <summary>
-        /// Return the Sound object with the given name. 
-        /// Used by other objets to access the sounds they want to play.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public Sound FindSound(string name)
+
+        public void RegisterAudioSourcePlayer(AudioSourcePlayer player)
         {
-            return soundBank.FindSound(name);
-        }
-        
-        /// <summary>
-        /// Return the music with the given name. 
-        /// Used by other objets to access the musics they want to play.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public Sound FindMusic(string name)
-        {
-            return soundBank.FindMusic(name);
+            soundSources.Add(player);
+            OnVolumeChange.AddListener(player.SetVolumeAllSources);
         }
 
-        /// <summary>
-        /// Return the SoundList with the given name. 
-        /// Used by other objets to access the sounds they want to play.        
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public SoundList FindList(string name)
+        public void UnregisterAudioSourcePlayer(AudioSourcePlayer player)
         {
-            return soundBank.FindList(name);
+            soundSources.Remove(player);
+            OnVolumeChange.RemoveListener(player.SetVolumeAllSources);
         }
 
         #endregion
 
+
+
+    }
+
+    [System.Serializable]
+    public class MyFloatUnityEvent : UnityEvent<float>
+    {
 
     }
 }

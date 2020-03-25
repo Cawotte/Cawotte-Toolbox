@@ -24,6 +24,9 @@
          * 
          */
 
+        [SerializeField]
+        private AudioManager audioManager;
+
         /// <summary>
         /// Keep tracks of all sounds being currently played.
         /// </summary>
@@ -37,7 +40,9 @@
         [SerializeField]
         [ReadOnly]
         private Stack<AudioSource> availableAudioSources = new Stack<AudioSource>();
-        
+
+        public AudioManager AudioManager { set => audioManager = value; }
+
 
         /// <summary>
         /// Contains some data about a Sound being currently played
@@ -51,57 +56,42 @@
             public Action OnPlayEnd; //Action to perform when the sounds ends (if uninterrupted)
         }
 
-        #region Public Methods
-        /// <summary>
-        /// Play a random Sound from the given list name. 
-        /// Does nothing if a sound from the list is already being played.
-        /// Does nothing if the list doesn't exists in the AudioManager.
-        /// </summary>
-        /// <param name="listName"></param>
-        /// <param name="onEndPlay">Action to perform when the sound finish playing without interruption</param>
-        public void PlayRandomFromList(string listName, Action onEndPlay = null)
+        #region runtimeSet
+        private void OnEnable()
         {
-            //Does the sound exist ?
-            SoundList soundList = AudioManager.Instance.FindList(listName);
+            audioManager.RegisterAudioSourcePlayer(this);
+        }
 
-            if (soundList == null) return;
+        private void OnDisable()
+        {
+            audioManager.UnregisterAudioSourcePlayer(this);
+        }
+        #endregion
 
-            //If already being played, abort.
-            if (IsCurrentlyPlayed(listName))
+        #region Public Methods
+
+        public static AudioSourcePlayer AddAsComponent(GameObject gameObject, AudioManager audioManager)
+        {
+            //Disable OnEnable call at AddComponent() call
+            gameObject.SetActive(false);
+
+            AudioSourcePlayer audioPlayer = gameObject.AddComponent<AudioSourcePlayer>();
+            audioPlayer.audioManager = audioManager;
+
+            gameObject.SetActive(true);
+
+            return audioPlayer;
+        }
+
+        public void PlaySound(Sound sound, bool canRepeat = true, Action onEndPlay = null)
+        {
+            //Verify if the sound can be repeated multiple times
+            if (!canRepeat && IsCurrentlyPlayed(sound.name))
             {
                 return;
             }
 
-
-            Sound sound = soundList.GetRandom();
-
-            PlaySound(sound, listName, onEndPlay);
-        }
-
-        
-        /// <summary>
-        /// Play the Soundwith the given name. 
-        /// Does nothing if a sound is already being played.
-        /// Does nothing if the sound doesn't exists in the AudioManager.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="onEndPlay"></param>
-        public void PlaySound(string name, Action onEndPlay = null)
-        {
-
-            PlaySound(false, name, onEndPlay);
-        }
-        
-        public void PlayMusic(string name, Action onEndPlay = null)
-        {
-            PlaySound(true, name, onEndPlay);
-        }
-
-        public void Play(Sound sound, Action onEndPlay = null)
-        {
-            
-            if (sound == null) return;
-
+            //Play the Sound
             PlaySound(sound, sound.name, onEndPlay);
         }
 
@@ -124,6 +114,20 @@
         }
 
         /// <summary>
+        /// Change the volume of all currently playing sounds to the given one
+        /// </summary>
+        /// <param name="volume"></param>
+        public void SetVolumeAllSources(float volume)
+        {
+            volume = Mathf.Clamp01(volume);
+
+            foreach (PlayingSound currentlyPlaying in currentlyPlaying)
+            {
+                currentlyPlaying.Source.volume = volume;
+            }
+        }
+
+        /// <summary>
         /// Return true if the sound with the given name or list name is being played. 
         /// (The name that was used to play the sound)
         /// </summary>
@@ -134,6 +138,7 @@
             PlayingSound play = null;
             return IsCurrentlyPlayed(name, out play);
         }
+
         #endregion
 
         #region Private Methods
@@ -189,6 +194,9 @@
             playing.Source = source;
             playing.OnPlayEnd = onEndPlay;
 
+            //Volume
+            source.volume = audioManager.Volume;
+
             //Remember has currently playing
             currentlyPlaying.Add(playing);
 
@@ -203,30 +211,6 @@
                 sound.LoadIn(source);
                 source.Play();
             }
-        }
-        
-        private void PlaySound(bool isMusic, string name, Action onEndPlay = null)
-        {
-            
-            if (IsCurrentlyPlayed(name))
-            {
-                return;
-            }
-
-            //Does the sound exist ?
-            Sound sound;
-            if (isMusic)
-            {
-                sound = AudioManager.Instance.FindMusic(name);
-            }
-            else
-            {
-                sound = AudioManager.Instance.FindSound(name);
-            }
-            if (sound == null) return;
-
-            PlaySound(sound, name, onEndPlay);
-            
         }
 
         /// <summary>
