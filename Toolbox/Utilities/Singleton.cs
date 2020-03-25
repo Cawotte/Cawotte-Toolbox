@@ -57,8 +57,21 @@ namespace Cawotte.Toolbox
         #region  Methods
         private void Awake()
         {
-            if (_persistent)
-                DontDestroyOnLoad(gameObject);
+            if (_persistent) {
+				
+				//If there's no instance yet
+                if (_instance == null)
+                {
+                    //Declare this one as the one and only, and make it sure it survives through scenes.
+                    _instance = this;
+                    DontDestroyOnLoad(gameObject);
+                }
+                else
+                {
+                    //Destroy the fake god
+                    Destroy(gameObject);
+                }
+			}
             OnAwake();
         }
 
