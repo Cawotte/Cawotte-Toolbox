@@ -63,7 +63,7 @@ namespace Cawotte.Toolbox
                 if (_instance == null)
                 {
                     //Declare this one as the one and only, and make it sure it survives through scenes.
-                    _instance = this;
+                    _instance = Instance;
                     DontDestroyOnLoad(gameObject);
                 }
                 else
