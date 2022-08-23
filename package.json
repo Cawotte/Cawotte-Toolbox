@@ -1,12 +1,12 @@
 {
   "name": "com.cawotte.toolbox",
-  "displayName": "Cawotte - Toolbox",
-  "version": "1.0.0-pre.1",
-  "unity": "2021.2",
-  "unityRelease": "11f1",
-  "description": "This is a template package, used as a basis to build a bigger one.",
+  "displayName": "Toolbox",
+  "version": "0.1.0-preview1",
+  "unity": "2021.3",
+  "unityRelease": "5f1",
+  "description": "My personal library of Unity scripts that I re-use between projects.",
   "category": "Tool",
-  "type": "tool",
+  "type": "library",
   "license": "MIT",
   "author": {
     "name": "Cawotte",
