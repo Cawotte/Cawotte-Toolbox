@@ -7,29 +7,61 @@ using UnityEngine;
 
 // Cube coordinate
 
-public class HexGrid<T>
+namespace Cawotte.Toolbox
 {
-    [SerializeField]
-    private Dictionary<Vector3Int, T> grid;
-
-    public bool AddCell( Vector3Int coordinate, T cell )
+    public class HexGrid<T>
     {
-        try
+        [SerializeField]
+        private Dictionary<Vector3Int, T> grid;
+
+        #region Add/Remove
+        public bool AddCell( Vector3Int coordinate, T cell )
         {
-            grid.Add( coordinate, cell );
-            return true;
+            try
+            {
+                grid.Add( coordinate, cell );
+                return true;
+            }
+            catch ( System.ArgumentException )
+            {
+                return false;
+            }
         }
-        catch ( System.ArgumentException )
+
+        public bool RemoveCell( Vector3Int coordinate )
         {
-            return false;
+            return grid.Remove( coordinate );
         }
+
+        public bool HasCell( Vector3Int coordinate )
+        {
+            return grid.ContainsKey( coordinate );
+        }
+
+        #endregion
+        // Get Distance
+
+        #region Neighbor
+
+
+
+        public T GetNeighborCell( Vector3Int tile, Vector3Int direction )
+        {
+            Vector3Int neighbordCoord = HexUtils.GetNeighbor( tile, direction );
+            if ( HasCell( neighbordCoord ) )
+            {
+                return grid[neighbordCoord];
+            }
+            else
+            {
+                // Todo : Code error
+                return default( T );
+            }
+        }
+
+        #endregion
+        // Get Neighbor Cell(s)
+        // Get Neighbor(s) in Line
+
     }
-
-    // Remove Cell
-    // Has Cell
-    // Get Distance
-    // Get Neighbor Coordinate
-    // Get Neighbor Cell(s)
-    // Get Neighbor(s) in Line
-
 }
