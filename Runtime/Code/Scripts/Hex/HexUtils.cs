@@ -11,7 +11,8 @@ namespace Cawotte.Toolbox
         {
             //We are using static properties for Hex directions because enums can't hold a Vector3Int as a value.
 
-            public static Vector3Int TopRight       { get => new Vector3Int( 1, 1, 0 ); }
+            //Direction are misordered?
+            public static Vector3Int TopRight       { get => new Vector3Int( 1, -1, 0 ); }
             public static Vector3Int Right          { get => new Vector3Int( 1, 0, -1 ); }
             public static Vector3Int BottomRight    { get => new Vector3Int( 0, 1, -1 ); }
             public static Vector3Int BottomLeft     { get => new Vector3Int( -1, 1, 0 ); }
@@ -30,18 +31,18 @@ namespace Cawotte.Toolbox
         }
 
         #region Neighbor
-        public static Vector3Int GetNeighbor( Vector3Int tile, Vector3Int direction )
+        public static Vector3Int GetNeighborCoordinate( Vector3Int tile, Vector3Int direction )
         {
             return tile + direction;
         }
-        public static List<Vector3Int> GetAllPossibleNeighbors( Vector3Int tile )
+        public static List<Vector3Int> GetAllNeighborsCoordinate( Vector3Int tile )
         {
             List<Vector3Int> neighbors = new List<Vector3Int>();
             Vector3Int[] allDirections = Directions.AllDirections;
 
             for ( int i = 0; i < Directions.MaxDirections; i++ )
             {
-                neighbors.Add( GetNeighbor( tile, allDirections[i] ) );
+                neighbors.Add( GetNeighborCoordinate( tile, allDirections[i] ) );
             }
 
             return neighbors;
@@ -49,6 +50,15 @@ namespace Cawotte.Toolbox
 
         #endregion
 
+        public static Vector3 HexToWorld( Vector3 worldOrigin, float oneUnitLenght, Vector3Int coordinate )
+        {
+            // Converting Cube coordinate (q,r,s) to Axial (r, s)
+            float x = oneUnitLenght * ( ( Mathf.Sqrt( 3 ) * coordinate.x ) +
+                                      ( ( Mathf.Sqrt( 3 ) / 2 ) * coordinate.y ) );
+            float y = oneUnitLenght * (3f/2f) * coordinate.y;
+
+            return worldOrigin + new Vector3( x, y, 0 );
+        }
         /// <summary>
         /// Basic random generation algorithm for an Hex grid.
         /// Pick a random neighbors to be the new tile out of all possible neighbors of the current tile/grid.
@@ -71,7 +81,7 @@ namespace Cawotte.Toolbox
                 // Tiles that shares neighbor will be added several times, technically increasing their weight once picked
                 foreach ( Vector3Int tile in grid )
                 {
-                    List<Vector3Int> directNeighbors = GetAllPossibleNeighbors( tile );
+                    List<Vector3Int> directNeighbors = GetAllNeighborsCoordinate( tile );
                     foreach ( Vector3Int neighbor in directNeighbors )
                     {
                         if ( !grid.Contains( neighbor ) ) // Don't put tiles already placed
@@ -79,7 +89,7 @@ namespace Cawotte.Toolbox
                             possibleNeighbors.Add( neighbor );
                         }
                     }
-                } // Those loops scales poorly (n^3), but will do the job at our scale.
+                } // Those loops scales very poorly (n^3), but will do the job at our scale.
 
                 Vector3Int newTile = possibleNeighbors[ Random.Range( 0, possibleNeighbors.Count ) ];
                 grid.Add( newTile );
@@ -88,6 +98,7 @@ namespace Cawotte.Toolbox
 
             return grid;
         }
-    }
 
+
+    }
 }
