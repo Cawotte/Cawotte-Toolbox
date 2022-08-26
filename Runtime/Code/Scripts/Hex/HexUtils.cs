@@ -30,6 +30,28 @@ namespace Cawotte.Toolbox
 
         }
 
+        public static float CubeDistance( Vector3Int a, Vector3Int b )
+        {
+            Vector3Int ab = a - b;
+            return ( Mathf.Abs( ab.x ) + Mathf.Abs( ab.y ) + Mathf.Abs( ab.z ) ) / 2f;
+        }
+
+        public static bool AreCoordinatesAligned( Vector3Int a, Vector3Int b )
+        {
+            Vector3 ab = a - b;
+            Vector3Int[] allDirections = Directions.AllDirections;
+
+            for ( int i = 0; i < Directions.MaxDirections; i++ )
+            {
+                Vector3 normalizedDirection = Vector3.Normalize( allDirections[i] );
+                float distance = Vector3.Distance( ab.normalized, allDirections[i] );
+                Vector3 diff = ab.normalized - normalizedDirection;
+                if ( ab.normalized == normalizedDirection )
+                    return true;
+            }
+            return false;
+        }
+
         #region Neighbor
         public static Vector3Int GetNeighborCoordinate( Vector3Int tile, Vector3Int direction )
         {
