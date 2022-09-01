@@ -52,32 +52,6 @@ namespace Cawotte.Toolbox
             return false;
         }
 
-        /// <summary>
-        /// Get the closest direction vector from the direction represented by the given argument.
-        /// Verify that given vector has origin 0,0,0.
-        /// </summary>
-        /// <param name="tile"></param>
-        /// <returns></returns>
-        public static Vector3Int GetClosestDirection( Vector2 worldPos )
-        {
-            Vector3Int[] allDirections = Directions.AllDirections;
-            Vector3Int closestDirection = allDirections[0];
-
-            float minDistance = Mathf.Infinity;
-            for ( int i = 0; i < Directions.MaxDirections; i++ )
-            {
-                Vector3 worldDirection = HexToWorld( allDirections[i], Vector3.zero, 0.6f ); //( allDirections[i] );
-                float distance = Vector3.Distance( worldPos.normalized, worldDirection );
-                if ( distance < minDistance )
-                {
-                    minDistance = distance;
-                    closestDirection = allDirections[i];
-                }
-            }
-
-            return closestDirection;
-        }
-
         #region Neighbor
         public static Vector3Int GetNeighborCoordinate( Vector3Int tile, Vector3Int direction )
         {

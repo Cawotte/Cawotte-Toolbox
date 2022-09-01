@@ -72,8 +72,6 @@ namespace Cawotte.Toolbox
 
         #region Neighbor
 
-
-
         public T GetNeighborCell( Vector3Int tile, Vector3Int direction )
         {
             Vector3Int neighbordCoord = HexUtils.GetNeighborCoordinate( tile, direction );
