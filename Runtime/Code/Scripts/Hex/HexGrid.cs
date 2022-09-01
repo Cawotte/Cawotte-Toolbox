@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -90,6 +91,34 @@ namespace Cawotte.Toolbox
         #endregion
         // Get Neighbor Cell(s)
         // Get Neighbor(s) in Line
+
+        public ICollection<Vector3Int> GetNeighborsInLine( Vector3Int tile, Vector3Int direction )
+        {
+            return GetNeighborsInLine( tile, direction, HasCell );
+        }
+
+        public ICollection<Vector3Int> GetNeighborsInLine( Vector3Int tile, Vector3Int direction, Func<Vector3Int, bool> stopCondition )
+        {
+            List<Vector3Int> neighbors = new List<Vector3Int>();
+
+            int failSafeCount = 0;
+            Vector3Int currentCellInLine = tile;
+            do
+            {
+                neighbors.Add( currentCellInLine );
+                currentCellInLine = HexUtils.GetNeighborCoordinate( currentCellInLine, direction );
+
+                failSafeCount++;
+                if ( failSafeCount > 20 )
+                {
+                    Debug.Log( "OVERFLOW!" );
+                    return neighbors;
+                }
+
+            } while ( !stopCondition( currentCellInLine ) );
+
+            return neighbors;
+        }
 
     }
 }

@@ -52,6 +52,32 @@ namespace Cawotte.Toolbox
             return false;
         }
 
+        /// <summary>
+        /// Get the closest direction vector from the direction represented by the given argument.
+        /// Verify that given vector has origin 0,0,0.
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <returns></returns>
+        public static Vector3Int GetClosestDirection( Vector2 worldPos )
+        {
+            Vector3Int[] allDirections = Directions.AllDirections;
+            Vector3Int closestDirection = allDirections[0];
+
+            float minDistance = Mathf.Infinity;
+            for ( int i = 0; i < Directions.MaxDirections; i++ )
+            {
+                Vector3 worldDirection = HexToWorld( allDirections[i], Vector3.zero, 0.6f ); //( allDirections[i] );
+                float distance = Vector3.Distance( worldPos.normalized, worldDirection );
+                if ( distance < minDistance )
+                {
+                    minDistance = distance;
+                    closestDirection = allDirections[i];
+                }
+            }
+
+            return closestDirection;
+        }
+
         #region Neighbor
         public static Vector3Int GetNeighborCoordinate( Vector3Int tile, Vector3Int direction )
         {
@@ -72,7 +98,13 @@ namespace Cawotte.Toolbox
 
         #endregion
 
-        public static Vector3 HexToWorld( Vector3 worldOrigin, float oneUnitLenght, Vector3Int coordinate )
+        #region Conversions
+        public static Vector3 HexToWorld( Vector3Int coordinate )
+        {
+            return HexToWorld( coordinate, Vector3.zero, 1 );
+        }
+
+        public static Vector3 HexToWorld( Vector3Int coordinate, Vector3 worldOrigin, float oneUnitLenght )
         {
             // Converting Cube coordinate (q,r,s) to Axial (r, s)
             float x = oneUnitLenght * ( ( Mathf.Sqrt( 3 ) * coordinate.x ) +
@@ -81,6 +113,13 @@ namespace Cawotte.Toolbox
 
             return worldOrigin + new Vector3( x, y, 0 );
         }
+
+        public static Vector3Int CubeToAxial( Vector3Int cubeCoordinate )
+        {
+            return new Vector3Int( cubeCoordinate.x, cubeCoordinate.y, 0 );
+        }
+        #endregion
+
         /// <summary>
         /// Basic random generation algorithm for an Hex grid.
         /// Pick a random neighbors to be the new tile out of all possible neighbors of the current tile/grid.
