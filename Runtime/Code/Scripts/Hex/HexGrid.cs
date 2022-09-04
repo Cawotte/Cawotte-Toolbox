@@ -20,6 +20,8 @@ namespace Cawotte.Toolbox
         [SerializeField]
         private Dictionary<Vector3Int, T> grid;
 
+        public int Count { get => grid.Count; }
+
         public HexGrid()
         {
             this.grid = new Dictionary<Vector3Int, T>();
