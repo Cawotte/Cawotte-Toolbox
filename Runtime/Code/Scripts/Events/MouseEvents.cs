@@ -10,7 +10,7 @@ namespace Cawotte.Toolbox
     public class MouseEvents : MonoBehaviour
     {
         public UnityEvent OnMouseEnterEvent = null;
-        public UnityEvent OnMonseExitEvent = null;
+        public UnityEvent OnMouseExitEvent = null;
         public UnityEvent OnMouseClickEvent = null;
 
         private void OnMouseEnter()
@@ -20,8 +20,9 @@ namespace Cawotte.Toolbox
 
         private void OnMouseExit()
         {
-            OnMonseExitEvent?.Invoke();
+            OnMouseExitEvent?.Invoke();
         }
+
         private void OnMouseDown()
         {
             OnMouseClickEvent?.Invoke();
