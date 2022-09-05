@@ -92,21 +92,26 @@ namespace Cawotte.Toolbox
         // Get Neighbor Cell(s)
         // Get Neighbor(s) in Line
 
-        public ICollection<Vector3Int> GetNeighborsInLine( Vector3Int tile, Vector3Int direction )
+        public ICollection<Vector3Int> GetNeighborsCoordinatesInDirection( Vector3Int tile, Vector3Int direction )
         {
-            return GetNeighborsInLine( tile, direction, HasCell );
+            return GetNeighborsCoordinatesInDirection( tile, direction, HasCell );
         }
 
-        public ICollection<Vector3Int> GetNeighborsInLine( Vector3Int tile, Vector3Int direction, Func<Vector3Int, bool> stopCondition )
+        public ICollection<Vector3Int> GetNeighborsCoordinatesInDirection( Vector3Int tile, Vector3Int direction, Func<Vector3Int, bool> stopCondition )
         {
             List<Vector3Int> neighbors = new List<Vector3Int>();
 
             int failSafeCount = 0;
             Vector3Int currentCellInLine = tile;
+            bool shouldContinue = true;
+
             do
             {
-                neighbors.Add( currentCellInLine );
                 currentCellInLine = HexUtils.GetNeighborCoordinate( currentCellInLine, direction );
+                shouldContinue = !stopCondition( currentCellInLine );
+
+                if ( shouldContinue )
+                    neighbors.Add( currentCellInLine );
 
                 failSafeCount++;
                 if ( failSafeCount > 20 )
@@ -115,7 +120,40 @@ namespace Cawotte.Toolbox
                     return neighbors;
                 }
 
-            } while ( !stopCondition( currentCellInLine ) );
+            } while ( shouldContinue );
+
+            return neighbors;
+        }
+
+        public ICollection<T> GetNeighborsInDirection( Vector3Int tile, Vector3Int direction )
+        {
+            return GetNeighborsInDirection( tile, direction, HasCell );
+        }
+
+        public ICollection<T> GetNeighborsInDirection( Vector3Int tile, Vector3Int direction, Func<Vector3Int, bool> stopCondition )
+        {
+            List<T> neighbors = new List<T>();
+
+            int failSafeCount = 0;
+            Vector3Int currentCellInLine = tile;
+            bool shouldContinue = true;
+
+            do
+            {
+                currentCellInLine = HexUtils.GetNeighborCoordinate( currentCellInLine, direction );
+                shouldContinue = !stopCondition( currentCellInLine );
+
+                if ( shouldContinue )
+                    neighbors.Add( GetCell( currentCellInLine ) );
+
+                failSafeCount++;
+                if ( failSafeCount > 20 )
+                {
+                    Debug.Log( "OVERFLOW!" );
+                    return neighbors;
+                }
+
+            } while ( shouldContinue );
 
             return neighbors;
         }

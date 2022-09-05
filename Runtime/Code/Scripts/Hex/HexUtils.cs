@@ -30,11 +30,49 @@ namespace Cawotte.Toolbox
 
         }
 
+        #region Directions
+        public static bool IsAlignedWithDirection( Vector3 cubeDirection, Vector3Int direction )
+        {
+            float angleBetweenVec = Vector3.Angle( cubeDirection, direction );
+
+            return angleBetweenVec < Mathf.Epsilon;
+        }
+
+        /// <summary>
+        /// Take two Cube Coordinate of different cells, and if they are aligned in a hex grid, 
+        /// return the hex direction between them.
+        /// If there isn't an alignment, return Vector3.zero
+        /// </summary>
+        /// <param name="cubeA"></param>
+        /// <param name="cubeB"></param>
+        /// <returns></returns>
+        public static Vector3Int GetDirection( Vector3Int cubeA, Vector3Int cubeB )
+        {
+            Vector3Int vec = cubeB - cubeA;
+
+            Vector3Int[] allDirections = Directions.AllDirections;
+            for ( int i = 0; i < Directions.MaxDirections; i++ )
+            {
+                if ( IsAlignedWithDirection( vec, allDirections[i]  ) )
+                    return allDirections[i];
+            }
+
+            return Vector3Int.zero;
+        }
+
+        public static bool AreAlignedInHexCubeDirection( Vector3Int cubeA, Vector3Int cubeB )
+        {
+            return GetDirection( cubeA, cubeB ) != Vector3Int.zero;
+        }
+
+        #endregion
         public static float CubeDistance( Vector3Int a, Vector3Int b )
         {
             Vector3Int ab = a - b;
             return ( Mathf.Abs( ab.x ) + Mathf.Abs( ab.y ) + Mathf.Abs( ab.z ) ) / 2f;
         }
+
+        
 
         public static bool AreCoordinatesAligned( Vector3Int a, Vector3Int b )
         {
@@ -73,12 +111,12 @@ namespace Cawotte.Toolbox
         #endregion
 
         #region Conversions
-        public static Vector3 HexToWorld( Vector3Int coordinate )
+        public static Vector3 HexCubeToWorld( Vector3Int coordinate )
         {
-            return HexToWorld( coordinate, Vector3.zero, 1 );
+            return HexCubeToWorld( coordinate, Vector3.zero, 1 );
         }
 
-        public static Vector3 HexToWorld( Vector3Int coordinate, Vector3 worldOrigin, float hexWidth )
+        public static Vector3 HexCubeToWorld( Vector3Int coordinate, Vector3 worldOrigin, float hexWidth )
         {
             // Converting Cube coordinate (q,r,s) to Axial (r, s)
             float x = hexWidth * ( ( Mathf.Sqrt( 3 ) * coordinate.x ) +
@@ -88,7 +126,7 @@ namespace Cawotte.Toolbox
             return worldOrigin + new Vector3( x, y, 0 );
         }
 
-        public static Vector3Int WorldToHex( Vector3 worldPos, Vector3 worldOrigin, float hexWidth )
+        public static Vector3Int WorldToHexCube( Vector3 worldPos, Vector3 worldOrigin, float hexWidth )
         {
             worldPos = worldPos - worldOrigin;
 
@@ -96,6 +134,16 @@ namespace Cawotte.Toolbox
             float r = ( 2f/3f * worldPos.y ) / hexWidth;
 
             return CubeRound( AxialToCube( new Vector3( q, r, 0 ) ) );
+        }
+
+        public static Vector3Int WorldToHexAxial( Vector3 worldPos, Vector3 worldOrigin, float hexWidth )
+        {
+            worldPos = worldPos - worldOrigin;
+
+            float q = ( ( Mathf.Sqrt( 3 ) / 3 ) * worldPos.x - ( 1f/3f ) * worldPos.y ) / hexWidth;
+            float r = ( 2f/3f * worldPos.y ) / hexWidth;
+
+            return AxialRound( new Vector3( q, r, 0 ) );
         }
 
         public static Vector3Int CubeToAxial( Vector3Int cubeCoordinate )
