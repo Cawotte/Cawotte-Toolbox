@@ -89,8 +89,6 @@ namespace Cawotte.Toolbox
         }
 
         #endregion
-        // Get Neighbor Cell(s)
-        // Get Neighbor(s) in Line
 
         public ICollection<Vector3Int> GetNeighborsCoordinatesInDirection( Vector3Int tile, Vector3Int direction )
         {
