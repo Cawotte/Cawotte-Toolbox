@@ -78,19 +78,66 @@ namespace Cawotte.Toolbox
             return HexToWorld( coordinate, Vector3.zero, 1 );
         }
 
-        public static Vector3 HexToWorld( Vector3Int coordinate, Vector3 worldOrigin, float oneUnitLenght )
+        public static Vector3 HexToWorld( Vector3Int coordinate, Vector3 worldOrigin, float hexWidth )
         {
             // Converting Cube coordinate (q,r,s) to Axial (r, s)
-            float x = oneUnitLenght * ( ( Mathf.Sqrt( 3 ) * coordinate.x ) +
+            float x = hexWidth * ( ( Mathf.Sqrt( 3 ) * coordinate.x ) +
                                       ( ( Mathf.Sqrt( 3 ) / 2 ) * coordinate.y ) );
-            float y = oneUnitLenght * (3f/2f) * coordinate.y;
+            float y = hexWidth * (3f/2f) * coordinate.y;
 
             return worldOrigin + new Vector3( x, y, 0 );
+        }
+
+        public static Vector3Int WorldToHex( Vector3 worldPos, Vector3 worldOrigin, float hexWidth )
+        {
+            worldPos = worldPos - worldOrigin;
+
+            float q = ( ( Mathf.Sqrt( 3 ) / 3 ) * worldPos.x - ( 1f/3f ) * worldPos.y ) / hexWidth;
+            float r = ( 2f/3f * worldPos.y ) / hexWidth;
+
+            return CubeRound( AxialToCube( new Vector3( q, r, 0 ) ) );
         }
 
         public static Vector3Int CubeToAxial( Vector3Int cubeCoordinate )
         {
             return new Vector3Int( cubeCoordinate.x, cubeCoordinate.y, 0 );
+        }
+
+        public static Vector3Int AxialToCube( Vector3Int axial )
+        {
+            return new Vector3Int( axial.x, axial.y, - axial.x - axial.y );
+        }
+
+        public static Vector3 AxialToCube( Vector3 axial )
+        {
+            return new Vector3( axial.x, axial.y, -axial.x - axial.y );
+        }
+
+        // Convert World Cube Pos to nearest Coordinate
+        public static Vector3Int CubeRound( Vector3 pos )
+        {
+            int q = Mathf.RoundToInt( pos.x );
+            int r = Mathf.RoundToInt( pos.y );
+            int s = Mathf.RoundToInt( pos.z );
+
+            float qDiff = Mathf.Abs( q - pos.x );
+            float rDiff = Mathf.Abs( r - pos.y );
+            float sDiff = Mathf.Abs( s - pos.z );
+
+            // Because a Cube Coordinate must respect q + r + s = 0, do some check to verify and correct the equation
+            if ( qDiff > rDiff && qDiff > sDiff )
+                q = -r - s;
+            else if ( rDiff > sDiff )
+                r = -q - s;
+            else
+                s = -q - r;
+
+            return new Vector3Int( q, r, s );
+        }
+
+        public static Vector3Int AxialRound( Vector3 pos )
+        {
+            return CubeToAxial( CubeRound( AxialToCube( pos ) ) );
         }
         #endregion
 
